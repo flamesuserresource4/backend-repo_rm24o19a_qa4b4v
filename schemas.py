@@ -1,48 +1,37 @@
 """
-Database Schemas
+Database Schemas for FocusSync
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model corresponds to a MongoDB collection. Collection name is the lowercase of the class name.
 """
-
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
-# Example schemas (replace with your own):
-
-class User(BaseModel):
+class Userprofile(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    Users of FocusSync
+    Collection: "userprofile"
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    name: str = Field(..., description="Display name")
+    email: Optional[str] = Field(None, description="Email (optional)")
+    avatar: Optional[str] = Field(None, description="Avatar URL")
 
-class Product(BaseModel):
+class Queueentry(BaseModel):
     """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
+    Waiting room entries for matchmaking
+    Collection: "queueentry"
     """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+    user_name: str = Field(..., description="User's display name")
+    focus_topic: Optional[str] = Field(None, description="Optional topic or goal for the session")
+    timezone: Optional[str] = Field(None, description="User timezone")
 
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Focussession(BaseModel):
+    """
+    Active or completed deep work sessions
+    Collection: "focussession"
+    """
+    participant_names: List[str] = Field(..., description="Two participant display names")
+    started_at: datetime = Field(..., description="Session start time (UTC)")
+    duration_minutes: int = Field(50, ge=15, le=120, description="Planned duration in minutes")
+    status: str = Field("active", description="active|ended|cancelled")
+    focus_topic: Optional[str] = Field(None, description="Optional shared topic")
